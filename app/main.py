@@ -67,7 +67,7 @@ def _create_default_admin():
         if not admin:
             admin_user = User(
                 username="admin",
-                email="admin@sso.local",
+                email="admin@example.com",
                 password_hash=hash_password("Admin@1234"),
                 full_name="System Administrator",
                 role=UserRole.ADMIN,
