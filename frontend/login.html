@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SSO Login | Identity Management System</title>
+  <style>
+    /* ── Reset & Base ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --primary:    #4f46e5;
+      --primary-d:  #3730a3;
+      --primary-l:  #e0e7ff;
+      --danger:     #dc2626;
+      --success:    #16a34a;
+      --text:       #1e293b;
+      --muted:      #64748b;
+      --border:     #e2e8f0;
+      --bg:         #f8fafc;
+      --card:       #ffffff;
+      --radius:     12px;
+      --shadow:     0 10px 40px rgba(79,70,229,0.12);
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+
+    /* ── Card ── */
+    .card {
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      width: 100%;
+      max-width: 420px;
+      overflow: hidden;
+    }
+
+    .card-header {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-d) 100%);
+      padding: 2rem 2rem 1.5rem;
+      text-align: center;
+      color: #fff;
+    }
+
+    .card-header .logo {
+      width: 56px; height: 56px;
+      background: rgba(255,255,255,0.15);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 1rem;
+      font-size: 1.6rem;
+    }
+
+    .card-header h1 { font-size: 1.4rem; font-weight: 700; }
+    .card-header p  { font-size: 0.85rem; opacity: 0.85; margin-top: 0.25rem; }
+
+    .card-body { padding: 2rem; }
+
+    /* ── Tabs ── */
+    .tabs {
+      display: flex; gap: 0;
+      background: var(--bg);
+      border-radius: 8px;
+      padding: 4px;
+      margin-bottom: 1.5rem;
+    }
+    .tab-btn {
+      flex: 1; padding: 0.5rem;
+      border: none; border-radius: 6px;
+      font-size: 0.875rem; font-weight: 600;
+      cursor: pointer; transition: all 0.2s;
+      background: transparent; color: var(--muted);
+    }
+    .tab-btn.active {
+      background: var(--card);
+      color: var(--primary);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    /* ── Form ── */
+    .form-group { margin-bottom: 1rem; }
+    label {
+      display: block; font-size: 0.8rem;
+      font-weight: 600; color: var(--text);
+      margin-bottom: 0.35rem;
+    }
+
+    .input-wrap { position: relative; }
+    .input-wrap .icon {
+      position: absolute; left: 0.75rem; top: 50%;
+      transform: translateY(-50%);
+      color: var(--muted); font-size: 1rem; pointer-events: none;
+    }
+    .input-wrap .eye-btn {
+      position: absolute; right: 0.75rem; top: 50%;
+      transform: translateY(-50%);
+      background: none; border: none; cursor: pointer;
+      color: var(--muted); font-size: 1rem;
+    }
+
+    input[type="text"], input[type="email"], input[type="password"] {
+      width: 100%; padding: 0.65rem 0.75rem 0.65rem 2.25rem;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      font-size: 0.9rem; color: var(--text);
+      background: var(--bg);
+      transition: border-color 0.2s, box-shadow 0.2s;
+      outline: none;
+    }
+    input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px var(--primary-l);
+      background: #fff;
+    }
+    input.error { border-color: var(--danger); }
+
+    select {
+      width: 100%; padding: 0.65rem 0.75rem;
+      border: 1.5px solid var(--border);
+      border-radius: 8px; font-size: 0.9rem;
+      color: var(--text); background: var(--bg);
+      outline: none; cursor: pointer;
+    }
+
+    .field-error {
+      font-size: 0.75rem; color: var(--danger);
+      margin-top: 0.25rem; display: none;
+    }
+
+    /* ── Button ── */
+    .btn {
+      width: 100%; padding: 0.75rem;
+      background: linear-gradient(135deg, var(--primary), var(--primary-d));
+      color: #fff; border: none; border-radius: 8px;
+      font-size: 0.95rem; font-weight: 600;
+      cursor: pointer; transition: opacity 0.2s, transform 0.1s;
+      display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+      margin-top: 1.25rem;
+    }
+    .btn:hover  { opacity: 0.92; }
+    .btn:active { transform: scale(0.98); }
+    .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    /* ── Alert ── */
+    .alert {
+      padding: 0.75rem 1rem;
+      border-radius: 8px; font-size: 0.85rem;
+      margin-bottom: 1rem; display: none;
+      align-items: flex-start; gap: 0.5rem;
+    }
+    .alert.show { display: flex; }
+    .alert.error   { background: #fef2f2; color: var(--danger); border: 1px solid #fecaca; }
+    .alert.success { background: #f0fdf4; color: var(--success); border: 1px solid #bbf7d0; }
+
+    /* ── Divider ── */
+    .divider {
+      text-align: center; margin: 1rem 0;
+      font-size: 0.78rem; color: var(--muted);
+      position: relative;
+    }
+    .divider::before, .divider::after {
+      content: ""; position: absolute; top: 50%;
+      width: 40%; height: 1px; background: var(--border);
+    }
+    .divider::before { left: 0; }
+    .divider::after  { right: 0; }
+
+    /* ── Spinner ── */
+    .spinner {
+      width: 18px; height: 18px;
+      border: 2px solid rgba(255,255,255,0.4);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      display: none;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Footer ── */
+    .card-footer {
+      padding: 1rem 2rem;
+      background: var(--bg);
+      border-top: 1px solid var(--border);
+      text-align: center;
+      font-size: 0.78rem; color: var(--muted);
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 480px) {
+      .card-body { padding: 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="card">
+  <!-- Header -->
+  <div class="card-header">
+    <div class="logo">🔐</div>
+    <h1>SSO Identity Management</h1>
+    <p>Secure Single Sign-On Portal</p>
+  </div>
+
+  <!-- Body -->
+  <div class="card-body">
+    <!-- Tabs -->
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('login')">Sign In</button>
+      <button class="tab-btn" onclick="switchTab('register')">Register</button>
+    </div>
+
+    <!-- Alert -->
+    <div class="alert" id="alert">
+      <span id="alert-icon">⚠️</span>
+      <span id="alert-msg"></span>
+    </div>
+
+    <!-- ── LOGIN FORM ── -->
+    <form id="login-form" onsubmit="handleLogin(event)">
+      <div class="form-group">
+        <label for="login-username">Username</label>
+        <div class="input-wrap">
+          <span class="icon">👤</span>
+          <input type="text" id="login-username" placeholder="Enter your username" required />
+        </div>
+        <div class="field-error" id="err-login-username"></div>
+      </div>
+
+      <div class="form-group">
+        <label for="login-password">Password</label>
+        <div class="input-wrap">
+          <span class="icon">🔑</span>
+          <input type="password" id="login-password" placeholder="Enter your password" required />
+          <button type="button" class="eye-btn" onclick="togglePassword('login-password')">👁</button>
+        </div>
+        <div class="field-error" id="err-login-password"></div>
+      </div>
+
+      <button type="submit" class="btn" id="login-btn">
+        <div class="spinner" id="login-spinner"></div>
+        <span id="login-btn-text">Sign In</span>
+      </button>
+    </form>
+
+    <!-- ── REGISTER FORM ── -->
+    <form id="register-form" onsubmit="handleRegister(event)" style="display:none">
+      <div class="form-group">
+        <label for="reg-fullname">Full Name</label>
+        <div class="input-wrap">
+          <span class="icon">🏷</span>
+          <input type="text" id="reg-fullname" placeholder="John Doe" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="reg-username">Username <span style="color:var(--danger)">*</span></label>
+        <div class="input-wrap">
+          <span class="icon">👤</span>
+          <input type="text" id="reg-username" placeholder="john_doe" required />
+        </div>
+        <div class="field-error" id="err-reg-username"></div>
+      </div>
+
+      <div class="form-group">
+        <label for="reg-email">Email Address <span style="color:var(--danger)">*</span></label>
+        <div class="input-wrap">
+          <span class="icon">📧</span>
+          <input type="email" id="reg-email" placeholder="john@example.com" required />
+        </div>
+        <div class="field-error" id="err-reg-email"></div>
+      </div>
+
+      <div class="form-group">
+        <label for="reg-password">Password <span style="color:var(--danger)">*</span></label>
+        <div class="input-wrap">
+          <span class="icon">🔑</span>
+          <input type="password" id="reg-password" placeholder="Min 8 characters" required />
+          <button type="button" class="eye-btn" onclick="togglePassword('reg-password')">👁</button>
+        </div>
+        <div class="field-error" id="err-reg-password"></div>
+      </div>
+
+      <button type="submit" class="btn" id="reg-btn">
+        <div class="spinner" id="reg-spinner"></div>
+        <span id="reg-btn-text">Create Account</span>
+      </button>
+    </form>
+  </div>
+
+  <div class="card-footer">
+    🛡 Protected by JWT Authentication &nbsp;·&nbsp; SSO v1.0
+  </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
