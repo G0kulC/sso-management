@@ -253,49 +253,73 @@ async function loadCurrentUser() {
     if (!res.ok) { redirectToLogin(); return; }
     currentUser = await res.json();
 
-    // Update sidebar
-    document.getElementById("sb-name").textContent = currentUser.full_name || currentUser.username;
-    document.getElementById("sb-avatar").textContent = (currentUser.username[0] || "?").toUpperCase();
+    // Helper function to safely update element
+    const safeUpdate = (id, value, prop = 'textContent') => {
+      const el = document.getElementById(id);
+      if (el) el[prop] = value;
+    };
+
+    // Update sidebar (exists on all dashboard pages)
+    safeUpdate("sb-name", currentUser.full_name || currentUser.username);
+    safeUpdate("sb-avatar", (currentUser.username[0] || "?").toUpperCase());
 
     const roleBadge = document.getElementById("sb-role");
-    roleBadge.textContent = currentUser.role;
-    roleBadge.className = `badge role-badge ${currentUser.role}`;
+    if (roleBadge) {
+      roleBadge.textContent = currentUser.role;
+      roleBadge.className = `badge role-badge ${currentUser.role}`;
+    }
 
     // Show admin nav items
     if (currentUser.role === "admin") {
-      document.getElementById("admin-section").style.display = "block";
-      document.querySelectorAll(".admin-only").forEach(el => el.style.display = "flex");
+      const adminSection = document.getElementById("admin-section");
+      if (adminSection) adminSection.style.display = "block";
+      document.querySelectorAll(".admin-only").forEach(el => {
+        el.style.display = el.tagName === 'A' ? 'flex' : 'block';
+      });
     }
 
-    // Populate overview
-    document.getElementById("ov-username").textContent = currentUser.username;
-    document.getElementById("ov-email").textContent    = currentUser.email;
-    document.getElementById("ov-role").innerHTML       = `<span class="badge badge-${currentUser.role === 'admin' ? 'admin' : 'user'}">${currentUser.role}</span>`;
-    document.getElementById("ov-status").innerHTML     = `<span class="badge badge-success">Active</span>`;
-    document.getElementById("ov-since").textContent    = new Date(currentUser.created_at).toLocaleDateString();
+    // Populate overview (only exists on overview page)
+    safeUpdate("ov-username", currentUser.username);
+    safeUpdate("ov-email", currentUser.email);
+    const ovRole = document.getElementById("ov-role");
+    if (ovRole) {
+      ovRole.innerHTML = `<span class="badge badge-${currentUser.role === 'admin' ? 'admin' : 'user'}">${currentUser.role}</span>`;
+    }
+    const ovStatus = document.getElementById("ov-status");
+    if (ovStatus) {
+      ovStatus.innerHTML = `<span class="badge badge-success">Active</span>`;
+    }
+    const ovSince = document.getElementById("ov-since");
+    if (ovSince && currentUser.created_at) {
+      ovSince.textContent = new Date(currentUser.created_at).toLocaleDateString();
+    }
+    safeUpdate("stat-role", currentUser.role.toUpperCase());
 
-    document.getElementById("stat-role").textContent = currentUser.role.toUpperCase();
-
-    // Populate profile
-    document.getElementById("profile-name").textContent    = currentUser.full_name || currentUser.username;
-    document.getElementById("profile-email").textContent   = currentUser.email;
-    document.getElementById("profile-avatar").textContent  = (currentUser.username[0] || "?").toUpperCase();
-    document.getElementById("upd-fullname").value          = currentUser.full_name || "";
-    document.getElementById("upd-email").value             = currentUser.email;
+    // Populate profile (only exists on profile page)
+    safeUpdate("profile-name", currentUser.full_name || currentUser.username);
+    safeUpdate("profile-email", currentUser.email);
+    safeUpdate("profile-avatar", (currentUser.username[0] || "?").toUpperCase());
+    safeUpdate("upd-fullname", currentUser.full_name || "", "value");
+    safeUpdate("upd-email", currentUser.email, "value");
     const prb = document.getElementById("profile-role-badge");
-    prb.textContent = currentUser.role;
-    prb.className = `badge badge-${currentUser.role === 'admin' ? 'admin' : 'user'}`;
+    if (prb) {
+      prb.textContent = currentUser.role;
+      prb.className = `badge badge-${currentUser.role === 'admin' ? 'admin' : 'user'}`;
+    }
 
-    // Populate token info
+    // Populate token info (only exists on token page)
     const token = TokenStore.getAccess();
-    document.getElementById("token-display").textContent = token;
-    const payload = decodeJWT(token);
-    if (payload) {
-      document.getElementById("tok-userid").textContent   = payload.sub;
-      document.getElementById("tok-username").textContent = payload.username;
-      document.getElementById("tok-role").textContent     = payload.role;
-      document.getElementById("tok-iat").textContent      = payload.iat ? new Date(payload.iat * 1000).toLocaleString() : "—";
-      document.getElementById("tok-exp").textContent      = payload.exp ? new Date(payload.exp * 1000).toLocaleString() : "—";
+    const tokenDisplay = document.getElementById("token-display");
+    if (tokenDisplay && token) {
+      tokenDisplay.textContent = token;
+      const payload = decodeJWT(token);
+      if (payload) {
+        safeUpdate("tok-userid", payload.sub);
+        safeUpdate("tok-username", payload.username);
+        safeUpdate("tok-role", payload.role);
+        safeUpdate("tok-iat", payload.iat ? new Date(payload.iat * 1000).toLocaleString() : "—");
+        safeUpdate("tok-exp", payload.exp ? new Date(payload.exp * 1000).toLocaleString() : "—");
+      }
     }
 
     // Load stats if admin
@@ -303,7 +327,8 @@ async function loadCurrentUser() {
       loadStats();
     }
 
-  } catch {
+  } catch (err) {
+    console.error("Error loading user:", err);
     redirectToLogin();
   }
 }
@@ -314,15 +339,21 @@ async function loadStats() {
       apiCall("/users/"),
       apiCall("/apps/")
     ]);
+    
+    // Safely update stats (only exist on overview page)
     if (usersRes.ok) {
       const data = await usersRes.json();
-      document.getElementById("stat-users").textContent = data.total || 0;
+      const statUsers = document.getElementById("stat-users");
+      if (statUsers) statUsers.textContent = data.total || 0;
     }
     if (appsRes.ok) {
       const apps = await appsRes.json();
-      document.getElementById("stat-apps").textContent = apps.length || 0;
+      const statApps = document.getElementById("stat-apps");
+      if (statApps) statApps.textContent = apps.length || 0;
     }
-  } catch {}
+  } catch (err) {
+    console.error("Error loading stats:", err);
+  }
 }
 
 function showPage(page) {

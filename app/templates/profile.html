@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Profile | {{ app_name }}</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --primary:   #4f46e5;
+      --primary-d: #3730a3;
+      --primary-l: #e0e7ff;
+      --danger:    #dc2626;
+      --success:   #16a34a;
+      --warning:   #d97706;
+      --text:      #1e293b;
+      --muted:     #64748b;
+      --border:    #e2e8f0;
+      --bg:        #f1f5f9;
+      --card:      #ffffff;
+      --radius:    10px;
+      --sidebar-w: 240px;
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+    }
+
+    /* ── Sidebar ── */
+    .sidebar {
+      width: var(--sidebar-w);
+      background: linear-gradient(180deg, #312e81 0%, #1e1b4b 100%);
+      color: #fff;
+      display: flex; flex-direction: column;
+      position: fixed; top: 0; left: 0; bottom: 0;
+      z-index: 100;
+    }
+    .sidebar-logo {
+      padding: 1.5rem;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      display: flex; align-items: center; gap: 0.75rem;
+    }
+    .sidebar-logo .icon { font-size: 1.5rem; }
+    .sidebar-logo h2 { font-size: 0.95rem; font-weight: 700; line-height: 1.3; }
+
+    .sidebar-user {
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    .sidebar-user .avatar {
+      width: 40px; height: 40px;
+      background: rgba(255,255,255,0.15);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem; margin-bottom: 0.5rem;
+    }
+    .sidebar-user .name { font-size: 0.875rem; font-weight: 600; }
+    .sidebar-user .role-badge {
+      display: inline-block;
+      padding: 0.15rem 0.5rem;
+      background: rgba(255,255,255,0.15);
+      border-radius: 20px; font-size: 0.7rem;
+      text-transform: uppercase; letter-spacing: 0.05em;
+    }
+    .role-badge.admin { background: rgba(251,191,36,0.3); color: #fde68a; }
+    .role-badge.user  { background: rgba(99,219,219,0.2); color: #99f6e4; }
+
+    .sidebar-nav { flex: 1; padding: 1rem 0; }
+    .nav-section { padding: 0.5rem 1.5rem 0.25rem; font-size: 0.65rem;
+      text-transform: uppercase; letter-spacing: 0.08em; opacity: 0.5; }
+    .nav-item {
+      display: flex; align-items: center; gap: 0.75rem;
+      padding: 0.65rem 1.5rem;
+      font-size: 0.875rem; cursor: pointer;
+      transition: background 0.15s; border-radius: 0;
+      opacity: 0.8; text-decoration: none; color: #fff;
+    }
+    .nav-item:hover, .nav-item.active {
+      background: rgba(255,255,255,0.1); opacity: 1;
+    }
+    .nav-item.active { border-left: 3px solid #a5b4fc; }
+    .nav-item .icon { font-size: 1rem; width: 20px; text-align: center; }
+
+    .sidebar-footer { padding: 1rem 1.5rem; border-top: 1px solid rgba(255,255,255,0.1); }
+    .logout-btn {
+      width: 100%; padding: 0.65rem;
+      background: rgba(220,38,38,0.2); border: 1px solid rgba(220,38,38,0.3);
+      color: #fca5a5; border-radius: 8px;
+      font-size: 0.85rem; cursor: pointer;
+      transition: background 0.2s;
+      display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+    }
+    .logout-btn:hover { background: rgba(220,38,38,0.35); }
+
+    /* ── Main Content ── */
+    .main {
+      margin-left: var(--sidebar-w);
+      flex: 1;
+      display: flex; flex-direction: column;
+      min-height: 100vh;
+    }
+
+    /* ── Top Bar ── */
+    .topbar {
+      background: var(--card);
+      border-bottom: 1px solid var(--border);
+      padding: 0.875rem 1.5rem;
+      display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 50;
+    }
+    .topbar h1 { font-size: 1.1rem; font-weight: 700; }
+    .topbar-right { display: flex; align-items: center; gap: 1rem; }
+    .topbar .time { font-size: 0.8rem; color: var(--muted); }
+
+    /* ── Content ── */
+    .content { padding: 1.5rem; flex: 1; }
+
+    /* ── Cards ── */
+    .card-section {
+      background: var(--card); border-radius: var(--radius);
+      border: 1px solid var(--border); margin-bottom: 1.25rem;
+      overflow: hidden;
+    }
+    .card-section-header {
+      padding: 1rem 1.25rem;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .card-section-header h3 { font-size: 0.95rem; font-weight: 700; }
+    .card-section-body { padding: 1.25rem; }
+
+    /* ── Badges ── */
+    .badge {
+      display: inline-block; padding: 0.2rem 0.6rem;
+      border-radius: 20px; font-size: 0.7rem; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.04em;
+    }
+    .badge-admin   { background: #ede9fe; color: #6d28d9; }
+    .badge-user    { background: #dbeafe; color: #1d4ed8; }
+
+    /* ── Forms ── */
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .form-group { margin-bottom: 1rem; }
+    .form-group label { display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.35rem; }
+    .form-group input, .form-group select {
+      width: 100%; padding: 0.6rem 0.75rem;
+      border: 1.5px solid var(--border); border-radius: 8px;
+      font-size: 0.875rem; color: var(--text); background: var(--bg); outline: none;
+    }
+    .form-group input:focus, .form-group select:focus {
+      border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-l);
+    }
+
+    /* ── Buttons ── */
+    .btn-main {
+      padding: 0.65rem 1.25rem;
+      background: var(--primary); color: #fff;
+      border: none; border-radius: 8px;
+      font-size: 0.875rem; font-weight: 600; cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    .btn-main:hover { opacity: 0.9; }
+
+    /* ── Alert ── */
+    .alert-box {
+      padding: 0.75rem 1rem; border-radius: 8px;
+      font-size: 0.85rem; margin-bottom: 1rem; display: none;
+    }
+    .alert-box.show { display: block; }
+    .alert-box.error   { background: #fef2f2; color: var(--danger); border: 1px solid #fecaca; }
+    .alert-box.success { background: #f0fdf4; color: var(--success); border: 1px solid #bbf7d0; }
+
+    /* ── Profile ── */
+    .profile-avatar {
+      width: 80px; height: 80px;
+      background: var(--primary-l); border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 2rem; margin-bottom: 1rem;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 768px) {
+      .sidebar { transform: translateX(-100%); }
+      .main { margin-left: 0; }
+      .form-row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Sidebar ── -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <span class="icon">🔐</span>
+    <h2>{{ app_name }}</h2>
+  </div>
+
+  <div class="sidebar-user">
+    <div class="avatar" id="sb-avatar">👤</div>
+    <div class="name" id="sb-name">Loading...</div>
+    <span class="badge role-badge" id="sb-role">user</span>
+  </div>
+
+  <nav class="sidebar-nav">
+    <div class="nav-section">Main</div>
+    <a href="/dashboard" class="nav-item">
+      <span class="icon">📊</span> Overview
+    </a>
+    <a href="/profile" class="nav-item active">
+      <span class="icon">👤</span> My Profile
+    </a>
+    <a href="/token" class="nav-item">
+      <span class="icon">🎫</span> Token Info
+    </a>
+
+    <div class="nav-section" id="admin-section" style="display:none">Admin</div>
+    <a href="/users" class="nav-item admin-only" style="display:none">
+      <span class="icon">👥</span> Users
+    </a>
+    <a href="/applications" class="nav-item admin-only" style="display:none">
+      <span class="icon">🖥</span> Applications
+    </a>
+    <a href="/audit-logs" class="nav-item admin-only" style="display:none">
+      <span class="icon">📋</span> Audit Logs
+    </a>
+  </nav>
+
+  <div class="sidebar-footer">
+    <button class="logout-btn" onclick="logout()">🚪 Sign Out</button>
+  </div>
+</aside>
+
+<!-- ── Main ── -->
+<main class="main">
+  <div class="topbar">
+    <h1>My Profile</h1>
+    <div class="topbar-right">
+      <span class="time" id="clock"></span>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="card-section">
+      <div class="card-section-header"><h3>👤 My Profile</h3></div>
+      <div class="card-section-body">
+        <div style="display:flex;align-items:center;gap:1.5rem;margin-bottom:1.5rem">
+          <div class="profile-avatar" id="profile-avatar">👤</div>
+          <div>
+            <div style="font-size:1.2rem;font-weight:700" id="profile-name">—</div>
+            <div style="color:var(--muted);font-size:0.875rem" id="profile-email">—</div>
+            <span class="badge" id="profile-role-badge">user</span>
+          </div>
+        </div>
+
+        <div class="alert-box" id="profile-alert"></div>
+
+        <form onsubmit="updateProfile(event)">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Full Name</label>
+              <input type="text" id="upd-fullname" placeholder="John Doe" />
+            </div>
+            <div class="form-group">
+              <label>Email</label>
+              <input type="email" id="upd-email" placeholder="john@example.com" />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>New Password (leave blank to keep current)</label>
+              <input type="password" id="upd-password" placeholder="Min 8 characters" />
+            </div>
+            <div class="form-group" style="display:flex;align-items:flex-end">
+              <button type="submit" class="btn-main" style="width:100%">💾 Save Changes</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+  window.API_BASE_URL = "{{ api_base }}";
+</script>
+<script src="/static/script.js"></script>
+<script>
+  // Initialize profile page
+  initDashboard();
+</script>
+</body>
+</html>

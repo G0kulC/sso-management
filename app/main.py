@@ -227,10 +227,60 @@ def serve_login(request: Request):
         "api_base": settings.BACKEND_URL
     })
 
-@app.get("/dashboard", tags=["Frontend"], response_class=HTMLResponse, summary="Dashboard Page")
+@app.get("/dashboard", tags=["Frontend"], response_class=HTMLResponse, summary="Dashboard Page (Overview)")
 def serve_dashboard(request: Request):
-    """Serves the dashboard page with server-side rendering."""
-    return templates.TemplateResponse("dashboard.html", {
+    """Serves the overview/dashboard page with server-side rendering."""
+    return templates.TemplateResponse("overview.html", {
+        "request": request,
+        "app_name": settings.APP_NAME,
+        "app_version": settings.APP_VERSION,
+        "api_base": settings.BACKEND_URL
+    })
+
+@app.get("/profile", tags=["Frontend"], response_class=HTMLResponse, summary="My Profile Page")
+def serve_profile(request: Request):
+    """Serves the user profile page."""
+    return templates.TemplateResponse("profile.html", {
+        "request": request,
+        "app_name": settings.APP_NAME,
+        "app_version": settings.APP_VERSION,
+        "api_base": settings.BACKEND_URL
+    })
+
+@app.get("/token", tags=["Frontend"], response_class=HTMLResponse, summary="Token Info Page")
+def serve_token(request: Request):
+    """Serves the token information page."""
+    return templates.TemplateResponse("token.html", {
+        "request": request,
+        "app_name": settings.APP_NAME,
+        "app_version": settings.APP_VERSION,
+        "api_base": settings.BACKEND_URL
+    })
+
+@app.get("/users", tags=["Frontend"], response_class=HTMLResponse, summary="Users Management Page")
+def serve_users(request: Request):
+    """Serves the users management page (Admin only)."""
+    return templates.TemplateResponse("users.html", {
+        "request": request,
+        "app_name": settings.APP_NAME,
+        "app_version": settings.APP_VERSION,
+        "api_base": settings.BACKEND_URL
+    })
+
+@app.get("/applications", tags=["Frontend"], response_class=HTMLResponse, summary="Applications Page")
+def serve_applications(request: Request):
+    """Serves the applications management page (Admin only)."""
+    return templates.TemplateResponse("applications.html", {
+        "request": request,
+        "app_name": settings.APP_NAME,
+        "app_version": settings.APP_VERSION,
+        "api_base": settings.BACKEND_URL
+    })
+
+@app.get("/audit-logs", tags=["Frontend"], response_class=HTMLResponse, summary="Audit Logs Page")
+def serve_audit_logs(request: Request):
+    """Serves the audit logs page (Admin only)."""
+    return templates.TemplateResponse("audit_logs.html", {
         "request": request,
         "app_name": settings.APP_NAME,
         "app_version": settings.APP_VERSION,
