@@ -22,6 +22,10 @@ class Settings(BaseSettings):
     APP_VERSION: str = "1.0.0"
     DEBUG: bool = True
 
+    # Backend Server
+    BACKEND_URL: str = "http://localhost:8000"
+    BACKEND_PORT: int = 8000
+
     # CORS Origins (comma-separated)
     ALLOWED_ORIGINS: str = "http://localhost:3000,http://localhost:8000"
 

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SSO Login | Identity Management System</title>
+  <title>SSO Login | {{ app_name }}</title>
   <style>
     /* ── Reset & Base ── */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -205,8 +205,8 @@
   <!-- Header -->
   <div class="card-header">
     <div class="logo">🔐</div>
-    <h1>SSO Identity Management</h1>
-    <p>Secure Single Sign-On Portal</p>
+    <h1>{{ app_name }}</h1>
+    <p>Secure Single Sign-On Portal • v{{ app_version }}</p>
   </div>
 
   <!-- Body -->
@@ -300,6 +300,11 @@
   </div>
 </div>
 
+<!-- Server-side configuration injected into JavaScript -->
+<script>
+  // API base URL from server
+  window.API_BASE_URL = "{{ api_base }}";
+</script>
 <script src="/static/script.js"></script>
 </body>
 </html>

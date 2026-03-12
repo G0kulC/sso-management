@@ -6,7 +6,8 @@
 // ─────────────────────────────────────────────
 // CONFIGURATION
 // ─────────────────────────────────────────────
-const API_BASE = "http://localhost:8004";
+// Use server-injected API base URL (from Jinja2 template), or fallback to current origin
+const API_BASE = window.API_BASE_URL || window.location.origin;
 
 // ─────────────────────────────────────────────
 // TOKEN STORAGE UTILITIES
@@ -73,7 +74,7 @@ async function tryRefreshToken() {
 
 function redirectToLogin() {
   TokenStore.clear();
-  window.location.href = "login.html";
+  window.location.href = "/login";
 }
 
 // ─────────────────────────────────────────────
@@ -166,7 +167,7 @@ async function handleLogin(e) {
     if (res.ok) {
       TokenStore.save(data.access_token, data.refresh_token);
       showAlert("alert", "✅ Login successful! Redirecting...", "success");
-      setTimeout(() => { window.location.href = "dashboard.html"; }, 800);
+      setTimeout(() => { window.location.href = "/dashboard"; }, 800);
     } else {
       showAlert("alert", data.detail || "Login failed. Please try again.");
     }
@@ -229,7 +230,7 @@ let currentUser = null;
 async function initDashboard() {
   // Redirect if not logged in
   if (!TokenStore.isLoggedIn()) {
-    window.location.href = "login.html";
+    window.location.href = "/login";
     return;
   }
 
@@ -526,12 +527,12 @@ async function logout() {
     await apiCall("/auth/logout", { method: "POST" });
   } catch {}
   TokenStore.clear();
-  window.location.href = "login.html";
+  window.location.href = "/login";
 }
 
 // ─────────────────────────────────────────────
 // AUTO-REDIRECT: If already logged in, skip login page
 // ─────────────────────────────────────────────
-if (window.location.pathname.includes("login.html") && TokenStore.isLoggedIn()) {
-  window.location.href = "dashboard.html";
+if (window.location.pathname.includes("/login") && TokenStore.isLoggedIn()) {
+  window.location.href = "/dashboard";
 }

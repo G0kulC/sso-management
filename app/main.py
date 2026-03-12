@@ -36,7 +36,7 @@ logger = logging.getLogger(__name__)
 async def lifespan(app: FastAPI):
     """
     Lifespan context manager:
-    - Startup: Create DB tables, log ready message
+    - Startup: Create DB tables, log ready message, open browser
     - Shutdown: Log graceful shutdown
     """
     logger.info("🚀 Starting SSO Identity Management System...")
@@ -50,6 +50,17 @@ async def lifespan(app: FastAPI):
     logger.info("✅ Default admin account ready")
 
     logger.info(f"🔐 {settings.APP_NAME} v{settings.APP_VERSION} is ready")
+    
+    # Auto-open browser to frontend
+    import webbrowser
+    import threading
+    def open_browser():
+        import time
+        time.sleep(1.5)  # Wait for server to be fully ready
+        webbrowser.open(f"{settings.BACKEND_URL}/")
+    threading.Thread(target=open_browser, daemon=True).start()
+    logger.info(f"🌐 Opening browser at {settings.BACKEND_URL}/")
+    
     yield
 
     logger.info("👋 Shutting down SSO server...")
@@ -190,11 +201,62 @@ app.include_router(apps.router)
 
 
 # ─────────────────────────────────────────────
+# STATIC FILES & FRONTEND SERVING
+# ─────────────────────────────────────────────
+
+from pathlib import Path
+from fastapi.responses import HTMLResponse
+
+# Get the frontend directory paths
+frontend_dir = Path(__file__).parent.parent / "frontend"
+templates_dir = Path(__file__).parent / "templates"
+
+# Set up Jinja2 templates for server-side rendering
+templates = Jinja2Templates(directory=str(templates_dir))
+
+# Serve static files (JS, CSS, images, etc.)
+app.mount("/static", StaticFiles(directory=str(frontend_dir)), name="static")
+
+@app.get("/login", tags=["Frontend"], response_class=HTMLResponse, summary="Login Page")
+def serve_login(request: Request):
+    """Serves the login page with server-side rendering."""
+    return templates.TemplateResponse("login.html", {
+        "request": request,
+        "app_name": settings.APP_NAME,
+        "app_version": settings.APP_VERSION,
+        "api_base": settings.BACKEND_URL
+    })
+
+@app.get("/dashboard", tags=["Frontend"], response_class=HTMLResponse, summary="Dashboard Page")
+def serve_dashboard(request: Request):
+    """Serves the dashboard page with server-side rendering."""
+    return templates.TemplateResponse("dashboard.html", {
+        "request": request,
+        "app_name": settings.APP_NAME,
+        "app_version": settings.APP_VERSION,
+        "api_base": settings.BACKEND_URL
+    })
+
+
+# ─────────────────────────────────────────────
 # ROOT ENDPOINTS
 # ─────────────────────────────────────────────
 
-@app.get("/", tags=["Health"], summary="API Health Check")
-def root():
+@app.get("/", tags=["Frontend"], response_class=HTMLResponse, summary="Home Page")
+def home(request: Request):
+    """Serves the home page with server-side rendered data."""
+    from datetime import datetime
+    return templates.TemplateResponse("home.html", {
+        "request": request,
+        "app_name": settings.APP_NAME,
+        "app_version": settings.APP_VERSION,
+        "api_base": settings.BACKEND_URL,
+        "server_time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "debug_mode": "Enabled" if settings.DEBUG else "Disabled"
+    })
+
+@app.get("/api", tags=["Health"], summary="API Health Check")
+def api_root():
     """Returns service info and confirms the API is running."""
     return {
         "service": settings.APP_NAME,

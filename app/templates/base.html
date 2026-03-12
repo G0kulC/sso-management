@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}{{ app_name }}{% endblock %}</title>
+  
+  {% block styles %}
+  <!-- Page-specific styles will be inserted here -->
+  {% endblock %}
+</head>
+<body>
+  {% block content %}
+  <!-- Page content goes here -->
+  {% endblock %}
+
+  <!-- Server-side configuration injected into JavaScript -->
+  <script>
+    // API base URL from server
+    window.API_BASE_URL = "{{ api_base }}";
+    window.APP_NAME = "{{ app_name }}";
+    window.APP_VERSION = "{{ app_version }}";
+  </script>
+  
+  {% block scripts %}
+  <!-- Page-specific scripts will be inserted here -->
+  {% endblock %}
+</body>
+</html>

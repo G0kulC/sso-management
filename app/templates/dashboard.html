@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Dashboard | SSO Identity Management</title>
+  <title>Dashboard | {{ app_name }}</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -263,7 +263,7 @@
 <aside class="sidebar">
   <div class="sidebar-logo">
     <span class="icon">🔐</span>
-    <h2>SSO Identity<br>Management</h2>
+    <h2>{{ app_name }}</h2>
   </div>
 
   <div class="sidebar-user">
@@ -519,6 +519,11 @@
   </div><!-- /content -->
 </main>
 
+<!-- Server-side configuration injected into JavaScript -->
+<script>
+  // API base URL from server
+  window.API_BASE_URL = "{{ api_base }}";
+</script>
 <script src="/static/script.js"></script>
 <script>
   // Initialize dashboard
